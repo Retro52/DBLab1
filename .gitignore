@@ -160,4 +160,4 @@ cython_debug/
 #.idea/
 
 # backup folder because db can be a bit huge
-./app/backups/*
+*.dump
