@@ -53,6 +53,7 @@ def create_backup(_backup_file: str):
 
 def restore_backup(_conn, _backup_file: str):
     if os.path.exists(_backup_file):
+        timer()
         restore_command = [
             'pg_restore',
             '--dbname=postgresql://{}:{}@{}:{}/{}'.format('dreamTeam', 'dreamTeam', 'db', '5432', 'zno_data'),
@@ -63,12 +64,14 @@ def restore_backup(_conn, _backup_file: str):
         try:
             subprocess.run(restore_command, check=True)
             print(f'Database restored from reserve copy {_backup_file}')
+            print("Backup loaded --> \t{};".format(timer()))
         except Exception as e:
             print("Failed to restore from backup: ", e)
 
             create_bd(_conn)
             fill_db(_conn)
     else:
+        timer()
         print('Backup does not exist, proceed to recreate db')
         create_bd(_conn)
         fill_db(_conn)
@@ -251,7 +254,7 @@ def insert_to_db(cursor, filename):
     # file's main data(records) processing
     reader = csv.reader(inputFile, delimiter=';')
     i: int = 0  # iter
-    limit: int = 50  # max values to insert
+    limit: int = -1  # max values to insert
     for row in reader:
         record = ';'.join(row).replace('\"', '').replace(
             '\'', '\'\'').replace('null', '0')
@@ -313,8 +316,14 @@ scheduler_thread = threading.Thread(target=run_scheduler)
 scheduler_thread.start()
 
 restore_backup(conn, backup_file)
-create_backup(backup_file)
 execute_querries(conn)
+
+# creating backup file
+conn.commit()
+
+timer()
+create_backup(backup_file)
+print("Backup created --> \t{};".format(timer()))
 
 # for testing
 # print("\nQuerry data:")
