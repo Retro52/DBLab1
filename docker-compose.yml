@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  app:
+    build: ./app/
+    networks:
+      - ntw
+    volumes:
+      - ./app:/usr/src/app
+      # - ./backups:/usr/src/app/backups
+    depends_on:
+      - db
+  db:
+    image: postgres:11-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=dreamTeam
+      - POSTGRES_PASSWORD=dreamTeam
+      - POSTGRES_DB=zno_data
+      - POSTGRES_HOST=db
+    ports:
+      - '5432:5432'
+    networks:
+      - ntw
+networks:
+  ntw:
